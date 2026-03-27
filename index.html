@@ -463,18 +463,18 @@
             <div class="err" id="errMsg">Message cannot be empty.</div>
           </div>
 
-          <!--  Options row 
+           Options row 
           <div class="flex flex-wrap gap-4 mb-6 mt-4 items-center">
             <label class="flex items-center gap-2 cursor-pointer text-sm" style="color:var(--text2)">
               <input type="checkbox" id="xorToggle" class="accent-violet-500 w-4 h-4" />
-              Apply XOR obfuscation layer
+              
             </label>
             <div class="flex items-center gap-2" style="margin-left:auto">
-              <label for="xorKey" class="text-sm" style="color:var(--text2); margin:0">XOR key (1–255):</label>
+              <label for="xorKey" class="text-sm" style="color:var(--text2); margin:0"></label>
               <input id="xorKey" type="number" min="1" max="255" value="42"
                 class="field" style="width:80px; padding:6px 10px; font-size:.85rem;" />
             </div>
-          </div> -->
+          </div>
 
           <button class="btn-primary w-full" id="encodeBtn">⚡ Generate Morse Code</button>
 
@@ -498,18 +498,18 @@
             <div class="err" id="errDecMorse">Please paste a Morse code string.</div>
           </div>
 
-          <!-- <!-- XOR 
+          <!-- XOR -->
           <div class="flex flex-wrap gap-4 mb-6 mt-4 items-center">
             <label class="flex items-center gap-2 cursor-pointer text-sm" style="color:var(--text2)">
               <input type="checkbox" id="xorToggleDec" class="accent-violet-500 w-4 h-4" />
-              Reverse XOR obfuscation
+              
             </label>
             <div class="flex items-center gap-2" style="margin-left:auto">
-              <label for="xorKeyDec" class="text-sm" style="color:var(--text2); margin:0">XOR key:</label>
+              <label for="xorKeyDec" class="text-sm" style="color:var(--text2); margin:0"></label>
               <input id="xorKeyDec" type="number" min="1" max="255" value="42"
                 class="field" style="width:80px; padding:6px 10px; font-size:.85rem;" />
             </div>
-          </div> -->
+          </div>
 
           <button class="btn-primary w-full" id="decodeBtn">🔍 Decode Morse</button>
 
