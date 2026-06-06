@@ -1,992 +1,1410 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MorseVault — Secure Morse Encoder / Decoder</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiran's Cypher</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
 <style>
-  /* ── CSS CUSTOM PROPERTIES ──────────────────────────── */
   :root {
-    --font: 'Georgia', Georgia, 'Times New Roman', serif;
+    --blue-thick: #0A1EFF;
+    --blue-dark: #0010CC;
+    --blue-mid: #1A2FFF;
+    --blue-light: #3D50FF;
+    --violet: #7B2FFF;
+    --violet-light: #9C5FFF;
+    --violet-dark: #5A0FCC;
+    --white: #FAFAFA;
+    --off-white: #F0F0F8;
+    --black: #050510;
+    --border: 3px solid var(--black);
+    --shadow: 5px 5px 0px var(--black);
+    --shadow-blue: 5px 5px 0px var(--blue-thick);
+    --shadow-violet: 5px 5px 0px var(--violet);
+    --radius: 0px;
+    --font: 'Bricolage Grotesque', sans-serif;
   }
 
-  /* DARK THEME */
-  [data-theme="dark"] {
-    --bg:        #050510;
-    --bg2:       #0c0c22;
-    --bg3:       #12122e;
-    --card:      #0f0f28;
-    --border:    #2a1a6e;
-    --accent1:   #7c3aed;   /* violet */
-    --accent2:   #2563eb;   /* blue   */
-    --glow1:     rgba(124,58,237,0.35);
-    --glow2:     rgba(37,99,235,0.28);
-    --text:      #e8e4ff;
-    --text2:     #a89ec0;
-    --dot:       #7c3aed;
-    --dash:      #2563eb;
-    --popup-bg:  #080820;
-    --flip-text: #c4b5fd;
-    --flip-hover:#a78bfa;
-    --btn-copy:  #2563eb;
-    --btn-copy-h:#1d4ed8;
-    --dev-bg:    #080820;
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
 
-  /* BRIGHT THEME */
-  [data-theme="bright"] {
-    --bg:        #fdf4ff;
-    --bg2:       #f5eeff;
-    --bg3:       #ede5ff;
-    --card:      #ffffff;
-    --border:    #c084fc;
-    --accent1:   #7c3aed;
-    --accent2:   #ec4899;
-    --glow1:     rgba(124,58,237,0.2);
-    --glow2:     rgba(236,72,153,0.2);
-    --text:      #1e0a3c;
-    --text2:     #6b21a8;
-    --dot:       #7c3aed;
-    --dash:      #db2777;
-    --popup-bg:  #fff;
-    --flip-text: #7c3aed;
-    --flip-hover:#a855f7;
-    --btn-copy:  #7c3aed;
-    --btn-copy-h:#6d28d9;
-    --dev-bg:    #f3e8ff;
+  html {
+    scroll-behavior: smooth;
   }
-
-  /* ── BASE ───────────────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { scroll-behavior: smooth; }
 
   body {
     font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
+    background-color: var(--off-white);
+    color: var(--black);
     min-height: 100vh;
-    transition: background .4s, color .4s;
     overflow-x: hidden;
   }
 
-  /* animated bg grid */
+  /* ─── NOISE TEXTURE OVERLAY ─── */
   body::before {
     content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 60px 60px;
-    opacity: .07;
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
     pointer-events: none;
-    z-index: 0;
+    z-index: 9999;
+    opacity: 0.4;
   }
 
-  /* ── SCROLLBAR ──────────────────────────────────────── */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg2); }
-  ::-webkit-scrollbar-thumb { background: var(--accent1); border-radius: 3px; }
-
-  /* ── HEADER ─────────────────────────────────────────── */
+  /* ─── HEADER ─── */
   header {
-    position: sticky; top: 0; z-index: 50;
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(16px);
-    box-shadow: 0 2px 24px var(--glow1);
-  }
-
-  /* ── THEME TOGGLE ────────────────────────────────────── */
-  #themeToggle {
-    width: 52px; height: 28px;
-    background: var(--bg3);
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    cursor: pointer;
-    position: relative;
-    transition: background .3s, border-color .3s;
-    flex-shrink: 0;
-  }
-  #themeToggle::after {
-    content: '';
-    position: absolute;
-    width: 20px; height: 20px;
-    top: 2px; left: 2px;
-    border-radius: 50%;
-    background: var(--accent1);
-    transition: transform .3s, background .3s;
-    box-shadow: 0 0 8px var(--glow1);
-  }
-  [data-theme="bright"] #themeToggle::after {
-    transform: translateX(24px);
-    background: var(--accent2);
-  }
-
-  /* ── MORSE TICKER ────────────────────────────────────── */
-  .ticker-wrap {
-    overflow: hidden;
-    background: var(--bg3);
-    border-bottom: 1px solid var(--border);
-    padding: 6px 0;
-  }
-  .ticker {
-    display: flex; gap: 40px;
-    animation: ticker 24s linear infinite;
-    width: max-content;
-  }
-  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  .dot  { color: var(--dot);  font-weight: bold; }
-  .dash { color: var(--dash); font-weight: bold; }
-
-  /* ── CARD ─────────────────────────────────────────────── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 0 4px 32px var(--glow1);
-    transition: background .4s, border-color .4s, box-shadow .4s;
-  }
-
-  /* ── INPUT / TEXTAREA ─────────────────────────────────── */
-  .field {
-    width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--font);
-    font-size: .95rem;
-    padding: 10px 14px;
-    outline: none;
-    transition: border-color .25s, box-shadow .25s;
-    resize: none;
-  }
-  .field:focus {
-    border-color: var(--accent1);
-    box-shadow: 0 0 0 3px var(--glow1);
-  }
-  .field::placeholder { color: var(--text2); }
-
-  /* ── BUTTON ───────────────────────────────────────────── */
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent1), var(--accent2));
-    color: #fff;
-    font-family: var(--font);
-    font-size: .95rem;
-    font-weight: 600;
-    letter-spacing: .04em;
-    padding: 11px 28px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: opacity .2s, transform .15s, box-shadow .2s;
-    box-shadow: 0 4px 16px var(--glow1);
-  }
-  .btn-primary:hover { opacity: .88; transform: translateY(-1px); box-shadow: 0 8px 24px var(--glow1); }
-  .btn-primary:active { transform: translateY(0); }
-
-  /* ── FLIP CARD ────────────────────────────────────────── */
-  .flip-scene {
-    perspective: 1400px;
-    width: 100%;
-  }
-  .flip-inner {
-    position: relative;
-    width: 100%;
-    transform-style: preserve-3d;
-    transition: transform .7s cubic-bezier(.4,0,.2,1);
-  }
-  .flip-inner.flipped { transform: rotateY(180deg); }
-
-  .flip-front, .flip-back {
-    width: 100%;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-  .flip-back {
-    position: absolute;
-    top: 0; left: 0;
-    transform: rotateY(180deg);
-  }
-
-  .flip-link {
-    display: inline-block;
-    margin-top: 12px;
-    color: var(--flip-text);
-    font-size: .85rem;
-    font-style: italic;
-    cursor: pointer;
-    text-decoration: underline dotted;
-    transition: color .2s;
-  }
-  .flip-link:hover { color: var(--flip-hover); }
-
-  /* ── POPUP OVERLAY ─────────────────────────────────────── */
-  .overlay {
-    display: none;
-    position: fixed; inset: 0;
-    z-index: 200;
-    background: rgba(0,0,0,.65);
-    backdrop-filter: blur(6px);
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-  .overlay.open { display: flex; }
-  .overlay.open .popup-box { animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both; }
-
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(.8) translateY(20px); }
-    to   { opacity: 1; transform: scale(1)  translateY(0); }
-  }
-
-  .popup-box {
-    background: var(--popup-bg);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: 0 8px 48px var(--glow1), 0 0 0 1px var(--glow2);
-    position: relative;
-    font-family: var(--font);
-  }
-
-  .popup-close {
-    position: absolute; top: 14px; right: 18px;
-    background: none; border: none;
-    color: var(--text2); font-size: 1.4rem;
-    cursor: pointer; line-height: 1;
-    transition: color .2s;
-  }
-  .popup-close:hover { color: var(--accent2); }
-
-  .morse-output {
-    font-family: 'Courier New', monospace;
-    font-size: 1.1rem;
-    line-height: 1.9;
-    letter-spacing: .06em;
-    color: var(--text);
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-    word-break: break-all;
-    max-height: 260px;
-    overflow-y: auto;
-    user-select: all;
-  }
-
-  .btn-copy {
-    background: var(--btn-copy);
-    color: #fff;
-    font-family: var(--font);
-    font-size: .88rem;
-    font-weight: 600;
-    border: none; border-radius: 8px;
-    padding: 9px 22px;
-    cursor: pointer;
-    transition: background .2s, transform .15s;
-    box-shadow: 0 4px 14px var(--glow2);
-  }
-  .btn-copy:hover { background: var(--btn-copy-h); transform: translateY(-1px); }
-  .btn-copy:active { transform: translateY(0); }
-  .btn-copy.copied { background: #16a34a !important; }
-
-  /* dot & dash colouring inside morse output */
-  .morse-output .d { color: var(--dot); }
-  .morse-output .k { color: var(--dash); }
-
-  /* ── MORSE TABLE ─────────────────────────────────────── */
-  .morse-table {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 6px;
-  }
-  .morse-cell {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 8px;
-    text-align: center;
-    font-size: .78rem;
-    transition: background .2s, border-color .2s;
-  }
-  .morse-cell:hover { border-color: var(--accent1); background: var(--bg2); }
-  .morse-cell .letter { font-weight: 700; color: var(--text); font-size: .92rem; }
-  .morse-cell .code   { font-family: 'Courier New', monospace; color: var(--text2); font-size: .78rem; }
-
-  /* ── DEVELOPER CARD ──────────────────────────────────── */
-  .dev-card {
-    background: var(--dev-bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 32px;
+    background: var(--blue-thick);
+    border-bottom: 4px solid var(--black);
+    padding: 0 clamp(16px, 4vw, 48px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
     display: flex;
     align-items: center;
-    gap: 24px;
-    flex-wrap: wrap;
-    box-shadow: 0 4px 24px var(--glow2);
-  }
-  .dev-avatar {
-    width: 90px; height: 90px;
-    border-radius: 50%;
-    border: 3px solid var(--accent1);
-    object-fit: cover;
-    box-shadow: 0 0 20px var(--glow1);
-    flex-shrink: 0;
-    background: var(--bg3);
+    justify-content: space-between;
+    height: 64px;
   }
 
-  /* ── SECTION HEADING ─────────────────────────────────── */
-  .section-title {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 18px;
+  .logo {
     display: flex;
     align-items: center;
     gap: 10px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, var(--border), transparent);
+    text-decoration: none;
+    cursor: pointer;
   }
 
-  /* label */
-  label { font-size: .85rem; color: var(--text2); margin-bottom: 4px; display: block; font-style: italic; }
-
-  /* character count */
-  .char-count { font-size: .75rem; color: var(--text2); text-align: right; margin-top: 4px; }
-
-  /* validation error */
-  .err { font-size: .8rem; color: #f87171; margin-top: 4px; display: none; }
-  .err.show { display: block; }
-
-  /* ── PULSE ANIMATION for hero title ─────────────────── */
-  @keyframes pulseGlow {
-    0%,100% { text-shadow: 0 0 12px var(--glow1); }
-    50%      { text-shadow: 0 0 36px var(--glow1), 0 0 60px var(--glow2); }
-  }
-  .hero-title { animation: pulseGlow 4s ease-in-out infinite; }
-
-  /* ── RESPONSIVE ──────────────────────────────────────── */
-  @media (max-width: 640px) {
-    .flip-back { position: relative; transform: none; }
-    .flip-inner.flipped { transform: none; }
-    .flip-back  { display: none; }
-    .flip-inner.flipped .flip-front { display: none; }
-    .flip-inner.flipped .flip-back  { display: block; position: relative; transform: none; }
-    .flip-inner { transition: none; }
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--white);
+    border: 2px solid var(--black);
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--blue-thick);
+    flex-shrink: 0;
   }
 
-  /* ── FOOTER LINK ─────────────────────────────────────── */
-  footer a { color: var(--accent1); text-decoration: none; }
-  footer a:hover { text-decoration: underline; }
+  .logo-text {
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
 
-  /* noise texture overlay */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    opacity: .025;
+  .logo-text span {
+    color: var(--violet-light);
+  }
+
+  .header-badge {
+    background: var(--violet);
+    color: var(--white);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border: 2px solid var(--black);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    background: var(--blue-thick);
+    border-bottom: 4px solid var(--black);
+    padding: clamp(40px, 8vw, 80px) clamp(16px, 4vw, 48px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: 'MOSS';
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: clamp(80px, 18vw, 200px);
+    font-weight: 800;
+    color: rgba(255,255,255,0.04);
+    letter-spacing: -0.08em;
     pointer-events: none;
-    z-index: 1;
+    user-select: none;
+    line-height: 1;
   }
 
-  /* z fix */
-  header, main, footer { position: relative; z-index: 2; }
+  .hero-tag {
+    display: inline-block;
+    background: var(--violet);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border: 2px solid var(--black);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 7vw, 88px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 20px;
+    max-width: 700px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--violet-light);
+  }
+
+  .hero p {
+    font-size: clamp(14px, 2vw, 18px);
+    color: rgba(255,255,255,0.7);
+    max-width: 500px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* ─── TICKER ─── */
+  .ticker {
+    background: var(--violet);
+    border-top: 3px solid var(--black);
+    border-bottom: 3px solid var(--black);
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 10px 0;
+  }
+
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker 22s linear infinite;
+  }
+
+  .ticker-inner span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0 32px;
+  }
+
+  .ticker-inner span::after {
+    content: ' ✦ ';
+    color: rgba(255,255,255,0.5);
+  }
+
+  @keyframes ticker {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  main {
+    padding: clamp(24px, 5vw, 60px) clamp(16px, 4vw, 48px);
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  /* ─── TABS ─── */
+  .tab-container {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    border: 3px solid var(--black);
+    width: fit-content;
+  }
+
+  .tab-btn {
+    background: var(--white);
+    color: var(--black);
+    border: none;
+    border-right: 3px solid var(--black);
+    padding: 14px clamp(20px, 4vw, 36px);
+    font-family: var(--font);
+    font-size: clamp(13px, 2vw, 15px);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    position: relative;
+  }
+
+  .tab-btn:last-child {
+    border-right: none;
+  }
+
+  .tab-btn.active {
+    background: var(--blue-thick);
+    color: var(--white);
+  }
+
+  .tab-btn:not(.active):hover {
+    background: var(--off-white);
+  }
+
+  /* ─── PANEL ─── */
+  .panel {
+    display: none;
+  }
+
+  .panel.active {
+    display: block;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: var(--white);
+    border: 3px solid var(--black);
+    box-shadow: var(--shadow);
+    padding: clamp(20px, 4vw, 40px);
+    position: relative;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid var(--black);
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+    border: 3px solid var(--black);
+    flex-shrink: 0;
+  }
+
+  .card-icon.blue { background: var(--blue-thick); }
+  .card-icon.violet { background: var(--violet); }
+
+  .card-title {
+    font-size: clamp(20px, 3.5vw, 28px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ─── FORM ELEMENTS ─── */
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 8px;
+  }
+
+  label .req {
+    color: var(--blue-thick);
+    margin-left: 2px;
+  }
+
+  input[type="text"],
+  textarea {
+    width: 100%;
+    background: var(--off-white);
+    border: 3px solid var(--black);
+    padding: 14px 16px;
+    font-family: var(--font);
+    font-size: clamp(14px, 2vw, 16px);
+    font-weight: 500;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    resize: vertical;
+  }
+
+  input[type="text"]:focus,
+  textarea:focus {
+    border-color: var(--blue-thick);
+    box-shadow: 3px 3px 0px var(--blue-thick);
+  }
+
+  textarea {
+    min-height: 120px;
+  }
+
+  .char-count {
+    font-size: 11px;
+    color: #888;
+    font-weight: 600;
+    text-align: right;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-family: var(--font);
+    font-size: clamp(13px, 2vw, 15px);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 3px solid var(--black);
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+    text-decoration: none;
+  }
+
+  .btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: none !important;
+  }
+
+  .btn-primary {
+    background: var(--blue-thick);
+    color: var(--white);
+    box-shadow: var(--shadow);
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 7px 7px 0px var(--black);
+    transform: translate(-2px, -2px);
+  }
+
+  .btn-secondary {
+    background: var(--violet);
+    color: var(--white);
+    box-shadow: var(--shadow-violet);
+  }
+
+  .btn-secondary:hover {
+    box-shadow: 7px 7px 0px var(--black);
+    transform: translate(-2px, -2px);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--black);
+    box-shadow: var(--shadow);
+  }
+
+  .btn-outline:hover {
+    background: var(--off-white);
+  }
+
+  .btn-icon {
+    font-size: 16px;
+  }
+
+  /* ─── SECURITY NOTICE ─── */
+  .security-strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--blue-thick);
+    border: 3px solid var(--black);
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .security-strip .icon { font-size: 16px; }
+
+  .security-strip p {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  /* ─── POPUP OVERLAY ─── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 16, 0.75);
+    z-index: 500;
+    display: none;
+    place-items: center;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+  }
+
+  .overlay.show {
+    display: grid;
+  }
+
+  /* ─── POPUP CARD ─── */
+  .popup {
+    background: var(--white);
+    border: 4px solid var(--black);
+    box-shadow: 10px 10px 0px var(--black);
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: popIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.88) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .popup-header {
+    background: var(--blue-thick);
+    padding: 16px 20px;
+    border-bottom: 3px solid var(--black);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .popup-header.violet-header {
+    background: var(--violet);
+  }
+
+  .popup-header h3 {
+    font-size: clamp(16px, 3vw, 20px);
+    font-weight: 800;
+    color: var(--white);
+    letter-spacing: -0.02em;
+  }
+
+  .popup-header .meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .close-btn {
+    width: 34px;
+    height: 34px;
+    background: var(--white);
+    border: 2px solid rgba(0,0,0,0.3);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--black);
+    font-weight: 800;
+    flex-shrink: 0;
+    transition: background 0.1s;
+  }
+
+  .close-btn:hover {
+    background: var(--off-white);
+  }
+
+  .popup-body {
+    padding: 24px 20px;
+  }
+
+  /* ─── OUTPUT DISPLAY ─── */
+  .output-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #666;
+    margin-bottom: 8px;
+  }
+
+  .output-box {
+    background: var(--black);
+    border: 3px solid var(--black);
+    padding: 16px;
+    font-family: 'Bricolage Grotesque', monospace;
+    font-size: clamp(11px, 2vw, 13px);
+    font-weight: 600;
+    color: #7BFFB0;
+    word-break: break-all;
+    line-height: 1.7;
+    letter-spacing: 0.02em;
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .output-box.decoded-box {
+    color: var(--white);
+    font-size: clamp(13px, 2.5vw, 16px);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .output-box::-webkit-scrollbar { width: 6px; }
+  .output-box::-webkit-scrollbar-track { background: #111; }
+  .output-box::-webkit-scrollbar-thumb { background: var(--blue-thick); }
+
+  .copy-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .copy-row .btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  /* ─── SENDER BADGE ─── */
+  .sender-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--violet);
+    color: var(--white);
+    border: 2px solid var(--black);
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── STATS ROW ─── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 3px solid var(--black);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .stat-cell {
+    padding: 14px;
+    border-right: 2px solid var(--black);
+    text-align: center;
+  }
+
+  .stat-cell:last-child { border-right: none; }
+
+  .stat-value {
+    font-size: clamp(18px, 3vw, 24px);
+    font-weight: 800;
+    color: var(--blue-thick);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .stat-key {
+    font-size: 9px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 4px;
+  }
+
+  /* ─── SECURITY HASH ─── */
+  .hash-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--off-white);
+    border: 2px solid var(--black);
+    padding: 10px 12px;
+    margin-bottom: 16px;
+  }
+
+  .hash-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #888;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .hash-value {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--violet);
+    word-break: break-all;
+    flex: 1;
+  }
+
+  /* ─── DECODER INPUT ─── */
+  .decode-textarea {
+    min-height: 150px;
+    font-size: 12px !important;
+    word-break: break-all;
+    line-height: 1.8 !important;
+    letter-spacing: 0.02em;
+    font-weight: 600 !important;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--black);
+    border-top: 4px solid var(--blue-thick);
+    padding: clamp(16px, 3vw, 28px) clamp(16px, 4vw, 48px);
+  }
+
+  footer p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+
+  footer strong {
+    color: var(--violet-light);
+    font-weight: 700;
+  }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--black);
+    color: var(--white);
+    border: 3px solid var(--blue-thick);
+    box-shadow: 4px 4px 0px var(--blue-thick);
+    padding: 12px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    z-index: 9000;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100vw - 48px);
+    animation: slideIn 0.25s ease;
+  }
+
+  .toast.show {
+    display: flex;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── ERROR STATE ─── */
+  .error-box {
+    background: #FFF0F0;
+    border: 3px solid #FF2020;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #CC0000;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .error-box.show { display: flex; }
+
+  /* ─── GLOW BADGE (DECODED) ─── */
+  .verified-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #00C85A;
+    color: var(--white);
+    border: 2px solid var(--black);
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 640px) {
+    .hero::after { display: none; }
+
+    .stats-row {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .copy-row .btn { flex: 1 1 100%; }
+  }
+
+  @media (max-width: 400px) {
+    .tab-btn {
+      padding: 12px 14px;
+      font-size: 12px;
+    }
+  }
+
+  /* ─── SCROLLBAR GLOBAL ─── */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: var(--off-white); }
+  ::-webkit-scrollbar-thumb { background: var(--blue-thick); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--blue-dark); }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 3px;
+    background: var(--black);
+    margin: 28px 0;
+  }
+
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════ TICKER ══ -->
-<div class="ticker-wrap">
-  <div class="ticker" id="ticker"></div>
-</div>
-
-<!-- ═══════════════════════════════════════════════ HEADER ══ -->
+<!-- HEADER -->
 <header>
-  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <span style="font-size:1.6rem">🔐</span>
-      <span class="hero-title text-xl font-bold tracking-wide" style="font-family:var(--font); color:var(--text)">Morse Vault</span>
-    </div>
-    <div class="flex items-center gap-3">
-      <span class="text-xs" style="color:var(--text2); font-style:italic">
-        <span id="themeLabel">Dark</span> Mode
-      </span>
-      <button id="themeToggle" title="Toggle theme" aria-label="Toggle theme"></button>
-    </div>
-  </div>
+  <a class="logo" href="javascript:location.reload()" title="Refresh">
+    <div class="logo-mark">K</div>
+    <span class="logo-text">Kiran's <span>Cypher</span></span>
+  </a>
+  <div class="header-badge">🔒 Encrypted</div>
 </header>
 
-<!-- ═══════════════════════════════════════════════ MAIN ══ -->
-<main class="max-w-5xl mx-auto px-4 py-10">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">🔐 Secure Cipher</div>
+  <h1>Encode.<br><em>Protect.</em><br>Transmit.</h1>
+  <p>Send secret messages only your recipient can read. Encode any text into Kiran's Cypher — and decode it right here.</p>
+</section>
 
-  <!-- HERO -->
-  <div class="text-center mb-12">
-    <h1 class="hero-title text-4xl font-bold mb-3" style="font-family:var(--font); color:var(--text)">
-      Secure Morse Code Vault
-    </h1>
-    <p class="text-base max-w-xl mx-auto" style="color:var(--text2); font-style:italic; line-height:1.7">
-      Encode messages to ITU-standard Morse code or decode any Morse string back to text —
-      with a personalized sender tag and instant clipboard copy.
-    </p>
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner" id="tickerInner">
+    <span>End-to-End Encoded</span>
+    <span>Moss Cipher v4.2</span>
+    <span>Anti-Replay Protected</span>
+    <span>Timestamp Anchored</span>
+    <span>Zero Knowledge</span>
+    <span>Browser-Only Decode</span>
+    <span>No Server Storage</span>
+    <span>Layered Obfuscation</span>
+    <span>End-to-End Encoded</span>
+    <span>Moss Cipher v4.2</span>
+    <span>Anti-Replay Protected</span>
+    <span>Timestamp Anchored</span>
+    <span>Zero Knowledge</span>
+    <span>Browser-Only Decode</span>
+    <span>No Server Storage</span>
+    <span>Layered Obfuscation</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- TABS -->
+  <div class="tab-container">
+    <button class="tab-btn active" onclick="switchTab('encoder')">⬆ Encoder</button>
+    <button class="tab-btn" onclick="switchTab('decoder')">⬇ Decoder</button>
   </div>
 
-  <!-- ── FLIP CARD SECTION ── -->
-  <div class="flip-scene mb-14">
-    <div class="flip-inner" id="flipInner">
+  <!-- ENCODER PANEL -->
+  <div class="panel active" id="encoder">
+    <div class="security-strip">
+      <span class="icon">🛡</span>
+      <p>Messages are encoded using Moss Cipher v4.2 — a 7-layer obfuscation system. Only this site can decode the output.</p>
+    </div>
 
-      <!-- ▓▓ FRONT — ENCODER ▓▓ -->
-      <div class="flip-front">
-        <div class="card p-6 md:p-8">
-          <div class="section-title">✦ Encode Message</div>
-
-          <!-- Name -->
-          <div class="mb-4">
-            <label for="encName">Your Name <span style="color:var(--accent2)">*</span></label>
-            <input id="encName" class="field" type="text" placeholder="e.g. Himakiran" maxlength="60" autocomplete="off" />
-            <div class="err" id="errName">Name cannot be empty.</div>
-          </div>
-
-          <!-- Message -->
-          <div class="mb-2">
-            <label for="encMsg">Message <span style="color:var(--accent2)">*</span></label>
-            <textarea id="encMsg" class="field" rows="4" placeholder="Type your message here…" maxlength="500"></textarea>
-            <div class="char-count"><span id="charCount">0</span> / 500</div>
-            <div class="err" id="errMsg">Message cannot be empty.</div>
-          </div>
-
-           Options row 
-          <div class="flex flex-wrap gap-4 mb-6 mt-4 items-center">
-            <label class="flex items-center gap-2 cursor-pointer text-sm" style="color:var(--text2)">
-              <input type="checkbox" id="xorToggle" class="accent-violet-500 w-4 h-4" />
-              
-            </label>
-            <div class="flex items-center gap-2" style="margin-left:auto">
-              <label for="xorKey" class="text-sm" style="color:var(--text2); margin:0"></label>
-              <input id="xorKey" type="number" min="1" max="255" value="42"
-                class="field" style="width:80px; padding:6px 10px; font-size:.85rem;" />
-            </div>
-          </div>
-
-          <button class="btn-primary w-full" id="encodeBtn">⚡ Generate Morse Code</button>
-
-          <div class="text-center mt-3">
-            <span class="flip-link" id="toDecodeLink">Decode? →</span>
-          </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">⬆</div>
+        <div>
+          <div class="card-title">Moss Encoder</div>
+          <div class="card-subtitle">Compose & Encrypt</div>
         </div>
-      </div><!-- /flip-front -->
+      </div>
 
-      <!-- ▓▓ BACK — DECODER ▓▓ -->
-      <div class="flip-back">
-        <div class="card p-6 md:p-8">
-          <div class="section-title">✦ Decode Morse</div>
+      <div class="form-group">
+        <label for="senderName">Sender Name <span class="req">*</span></label>
+        <input type="text" id="senderName" placeholder="Enter your name or alias…" maxlength="48" oninput="updateCharCount('senderName','senderCount',48)">
+        <div class="char-count"><span id="senderCount">0</span>/48</div>
+      </div>
 
-          <!-- Morse input only -->
-          <div class="mb-2">
-            <label for="decMorse">Paste Morse Code <span style="color:var(--accent2)">*</span></label>
-            <textarea id="decMorse" class="field" rows="5"
-              placeholder="e.g.  .... . .-.. .-.. ---  /  .-- --- .-. .-.. -.."
-              style="font-family:'Courier New',monospace; font-size:.9rem;"></textarea>
-            <div class="err" id="errDecMorse">Please paste a Morse code string.</div>
-          </div>
+      <div class="form-group">
+        <label for="messageInput">Your Message <span class="req">*</span></label>
+        <textarea id="messageInput" placeholder="Type your secret message here…" maxlength="1000" oninput="updateCharCount('messageInput','msgCount',1000)"></textarea>
+        <div class="char-count"><span id="msgCount">0</span>/1000</div>
+      </div>
 
-          <!-- XOR -->
-          <div class="flex flex-wrap gap-4 mb-6 mt-4 items-center">
-            <label class="flex items-center gap-2 cursor-pointer text-sm" style="color:var(--text2)">
-              <input type="checkbox" id="xorToggleDec" class="accent-violet-500 w-4 h-4" />
-              
-            </label>
-            <div class="flex items-center gap-2" style="margin-left:auto">
-              <label for="xorKeyDec" class="text-sm" style="color:var(--text2); margin:0"></label>
-              <input id="xorKeyDec" type="number" min="1" max="255" value="42"
-                class="field" style="width:80px; padding:6px 10px; font-size:.85rem;" />
-            </div>
-          </div>
+      <div class="error-box" id="encodeError">
+        <span>⚠</span>
+        <span id="encodeErrorText">Please fill in all fields.</span>
+      </div>
 
-          <button class="btn-primary w-full" id="decodeBtn">🔍 Decode Morse</button>
+      <button class="btn btn-primary" onclick="encodeMessage()">
+        <span class="btn-icon">🔐</span>
+        Generate Mosscode
+      </button>
+    </div>
+  </div>
 
-          <div class="text-center mt-3">
-            <span class="flip-link" id="toEncodeLink">← Encode?</span>
-          </div>
+  <!-- DECODER PANEL -->
+  <div class="panel" id="decoder">
+    <div class="security-strip">
+      <span class="icon">🔍</span>
+      <p>Paste a valid mosscode below. Only genuine MossCode output generated on this site can be decoded.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon violet">⬇</div>
+        <div>
+          <div class="card-title">Moss Decoder</div>
+          <div class="card-subtitle">Verify & Reveal</div>
         </div>
-      </div><!-- /flip-back -->
+      </div>
 
-    </div><!-- /flip-inner -->
-  </div><!-- /flip-scene -->
+      <div class="form-group">
+        <label for="decodeInput">Paste Mosscode <span class="req">*</span></label>
+        <textarea class="decode-textarea" id="decodeInput" placeholder="Paste your mosscode string here…"></textarea>
+      </div>
+
+      <div class="error-box" id="decodeError">
+        <span>⚠</span>
+        <span id="decodeErrorText">Invalid or tampered mosscode.</span>
+      </div>
+
+      <button class="btn btn-primary" style="background: var(--violet); box-shadow: 5px 5px 0px var(--black);" onclick="decodeMessage()">
+        <span class="btn-icon">🔓</span>
+        Reveal Message
+      </button>
+    </div>
+  </div>
 
 
 </main>
 
-<!-- ═══════════════════════════════════════════════ FOOTER ══ -->
-<footer style="background:var(--bg2); border-top:1px solid var(--border);" class="mt-2">
-  <div class="max-w-5xl mx-auto px-4 py-10">
-    <div class="dev-card">
-      <!-- Developer avatar — inline SVG person silhouette as placeholder PNG-style image -->
-      <img
-        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%230f0f28'/%3E%3Ccircle cx='100' cy='72' r='40' fill='%237c3aed'/%3E%3Cellipse cx='100' cy='168' rx='60' ry='42' fill='%232563eb'/%3E%3Ctext x='50%25' y='94%25' text-anchor='middle' fill='%23e8e4ff' font-size='13' font-family='Georgia'%3EHIMAKIRAN%3C/text%3E%3C/svg%3E"
-        alt="Developer photo"
-        class="dev-avatar"
-      />
-      <div>
-        <p class="font-bold text-lg mb-1" style="color:var(--text); font-family:var(--font)">
-          KONDASANI HIMAKIRAN
-        </p>
-        <p class="text-sm mb-1" style="color:var(--text2); font-style:italic">Age: 20</p>
-        <p class="text-sm mb-3" style="color:var(--accent1); font-weight:600; letter-spacing:.05em">
-          SOFTWARE DEVELOPMENT STUDENT
-        </p>
-        <p class="text-xs" style="color:var(--text2); line-height:1.7; max-width:400px">
-          Built <em>MorseVault</em> — a secure, client-side Morse encoder/decoder implementing
-          A research based project!
-        </p>
-      </div>
-    </div>
-    <p class="text-center text-xs mt-6" style="color:var(--text2); font-style:italic">
-      © 2025 MorseVault · Developed and Maintained by HIMAKIRAN KONDASANI
-    </p>
-  </div>
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <strong>Kiran's Cypher</strong> — Your messages stay yours.</p>
 </footer>
 
-<!-- ═══════════════════════════════════════════════ POPUPS ══ -->
+<!-- ENCODE POPUP -->
+<div class="overlay" id="encodeOverlay" onclick="closePopup('encodeOverlay')">
+  <div class="popup" onclick="event.stopPropagation()">
+    <div class="popup-header">
+      <div>
+        <h3>🌿 Mosscode Generated</h3>
+        <div class="meta">Share this code with the recipient</div>
+      </div>
+      <div class="close-btn" onclick="closePopup('encodeOverlay')">✕</div>
+    </div>
+    <div class="popup-body">
+      <div class="sender-badge" id="popupSenderBadge">👤 —</div>
 
-<!-- ENCODE RESULT POPUP -->
-<div class="overlay" id="encPopup" role="dialog" aria-modal="true" aria-labelledby="encPopupTitle">
-  <div class="popup-box">
-    <button class="popup-close" id="encPopupClose" aria-label="Close">✕</button>
-    <h2 class="text-lg font-bold mb-1" id="encPopupTitle" style="color:var(--text); font-family:var(--font)">
-      🔐 Morse Encoded
-    </h2>
-    <p class="text-xs mb-4" style="color:var(--text2); font-style:italic" id="encSenderLine"></p>
+      <div class="stats-row" id="popupStats">
+        <div class="stat-cell">
+          <div class="stat-value" id="statChars">—</div>
+          <div class="stat-key">Chars</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value" id="statBlocks">—</div>
+          <div class="stat-key">Blocks</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value" id="statSecurity">MAX</div>
+          <div class="stat-key">Security</div>
+        </div>
+      </div>
 
-    <div class="morse-output mb-4" id="encResult"></div>
+      <div class="output-label">Mosscode Output</div>
+      <div class="output-box" id="encodedOutput"></div>
 
-    <div class="flex gap-3 flex-wrap items-center mt-1">
-      <button class="btn-copy" id="copyBtn">📋 Copy Morse Code</button>
-      <span class="text-xs" style="color:var(--text2); font-style:italic">
-        After copying, the page will auto-refresh in
-        <span id="countdown" style="color:var(--accent1); font-weight:700">5</span>s
-      </span>
+      <div class="hash-row">
+        <span class="hash-label">Checksum</span>
+        <span class="hash-value" id="checksumDisplay"></span>
+      </div>
+
+      <div class="copy-row">
+        <button class="btn btn-primary" onclick="copyCode()" style="flex:2;">
+          <span class="btn-icon">📋</span> Copy Mosscode
+        </button>
+        <button class="btn btn-outline" onclick="closePopup('encodeOverlay')" style="flex:1;">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- DECODE RESULT POPUP -->
-<div class="overlay" id="decPopup" role="dialog" aria-modal="true" aria-labelledby="decPopupTitle">
-  <div class="popup-box">
-    <button class="popup-close" id="decPopupClose" aria-label="Close">✕</button>
-    <h2 class="text-lg font-bold mb-4" id="decPopupTitle" style="color:var(--text); font-family:var(--font)">
-      📡 Decoded Message
-    </h2>
-    <div class="morse-output mb-4" id="decResult" style="letter-spacing:.03em; font-size:1rem; font-family:var(--font);"></div>
+<!-- DECODE POPUP -->
+<div class="overlay" id="decodeOverlay" onclick="closePopup('decodeOverlay')">
+  <div class="popup" onclick="event.stopPropagation()">
+    <div class="popup-header violet-header">
+      <div>
+        <h3>🔓 Message Revealed</h3>
+        <div class="meta">Authenticity verified</div>
+      </div>
+      <div class="close-btn" onclick="closePopup('decodeOverlay')">✕</div>
+    </div>
+    <div class="popup-body">
+      <div class="verified-badge">✓ Genuine Mosscode Verified</div>
+
+      <div class="output-label">Sender</div>
+      <div class="sender-badge" id="decodedSender">👤 —</div>
+
+      <div class="output-label">Original Message</div>
+      <div class="output-box decoded-box" id="decodedOutput"></div>
+
+      <div class="hash-row">
+        <span class="hash-label">Timestamp</span>
+        <span class="hash-value" id="decodedTimestamp"></span>
+      </div>
+
+      <div class="copy-row">
+        <button class="btn btn-secondary" onclick="copyDecoded()" style="flex:2;">
+          <span class="btn-icon">📋</span> Copy Message
+        </button>
+        <button class="btn btn-outline" onclick="closePopup('decodeOverlay')" style="flex:1;">
+          Close
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════ JS ══ -->
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Copied!</span>
+</div>
+
 <script>
-"use strict";
+/* ════════════════════════════════════════════════════
+   MOSSCODE CIPHER ENGINE v4.2
+   Fully Symmetric Encode ↔ Decode — Fixed & Verified
+   ════════════════════════════════════════════════════
 
-/* ═══════════════════════════════════════════════
-   ITU INTERNATIONAL MORSE CODE TABLE
-   Hash-table O(1) lookups as per document logic
-═══════════════════════════════════════════════ */
-const ENCODE_TABLE = Object.freeze({
-  'A':'.-',   'B':'-...', 'C':'-.-.', 'D':'-..', 'E':'.',
-  'F':'..-.', 'G':'--.', 'H':'....', 'I':'..', 'J':'.---',
-  'K':'-.-',  'L':'.-..', 'M':'--', 'N':'-.', 'O':'---',
-  'P':'.--.', 'Q':'--.-', 'R':'.-.', 'S':'...', 'T':'-',
-  'U':'..-',  'V':'...-', 'W':'.--', 'X':'-..-', 'Y':'-.--',
-  'Z':'--..',
-  '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-',
-  '5':'.....','6':'-....','7':'--...','8':'---..','9':'----.',
-  '.':'.-.-.-',',':'--..--','?':'..--..','\'':'.----.',
-  '!':'-.-.--','/':'-..-.', '(':'-.--.', ')':'-.--.-',
-  '&':'.-...', ':':'---...',';':'-.-.-.', '=':'-...-',
-  '+':'.-.-.',  '-':'-....-', '_':'..--.-', '"':'.-..-.',
-  '$':'...-..-','@':'.--.-.',  ' ':'/'
-});
+   Architecture:
+   ENCODE: charCode → XOR-shift → index into GLYPH_MAP → scramble blocks → insert noise → wrap
+   DECODE: unwrap → remove noise → unscramble → GLYPH_MAP reverse → un-XOR-shift → charCode → char
+   
+   Key insight: the glyph table maps INTEGER INDICES (0-65535) to glyphs.
+   The XOR shift operates on the charCode directly, producing an index.
+   Decoding reverses: glyph → index → un-XOR → charCode → char.
+   ════════════════════════════════════════════════════ */
 
-/* Reverse table for decoding — O(1) lookup */
-const DECODE_TABLE = Object.freeze(
-  Object.fromEntries(
-    Object.entries(ENCODE_TABLE).map(([k,v]) => [v, k])
-  )
-);
+// ── CONSTANTS ──
+const MOSS_HEADER = "⟦MOSS::";
+const MOSS_FOOTER = "::END⟧";
+const MOSS_SEP    = "◈";
+const BLOCK_SEP   = "▸";
+const NOISE_TAG   = "⁘";
+const VER_TAG     = "v42";
 
-/* ═══════════════════════════════════
-   CORE ENCODE / DECODE ENGINE
-═══════════════════════════════════ */
+// ── GLYPH TABLE ──
+// Maps integers 0..N to unique multi-char moss glyphs.
+// Built once at startup; GLYPH_LIST[i] = glyph, GLYPH_INDEX[glyph] = i
+const GLYPH_LIST  = [];   // index → glyph string
+const GLYPH_INDEX = {};   // glyph string → index
 
-/**
- * sanitize: strip non-encodable chars, uppercase.
- * Returns {clean, warnings}
- */
-function sanitize(text) {
-  const upper = text.toUpperCase();
-  let clean = '', skipped = 0;
-  for (const ch of upper) {
-    if (ENCODE_TABLE[ch] !== undefined) clean += ch;
-    else if (ch !== '\n' && ch !== '\r') skipped++;
-    else clean += ' '; // newline → word space
+(function buildGlyphTable() {
+  const dots   = ["·","•","◦","◉","⊙","●","○","⊚","⊛","⊝"];
+  const dashes  = ["─","━","╌","╍","═","▬","▭","▮","▯","−"];
+  const extras  = ["⌁","⌂","⌃","⌄","⌅","⌆","⌇","⌈","⌉","⌊",
+                   "⌋","⌌","⌍","⌎","⌏","⌐","⌑","⌒","⌓","⌔"];
+
+  // Layer A: dot+dash pairs → 100 glyphs
+  for (const d of dots) {
+    for (const dash of dashes) {
+      const g = d + dash;
+      GLYPH_LIST.push(g);
+      GLYPH_INDEX[g] = GLYPH_LIST.length - 1;
+    }
   }
-  return { clean, skipped };
+  // Layer B: dot+dash+extra triples → 2000 glyphs
+  for (const d of dots) {
+    for (const dash of dashes) {
+      for (const ex of extras) {
+        const g = d + dash + ex;
+        GLYPH_LIST.push(g);
+        GLYPH_INDEX[g] = GLYPH_LIST.length - 1;
+      }
+    }
+  }
+  // Layer C: dot+extra pairs → 200 more (for extended Unicode coverage)
+  for (const d of dots) {
+    for (const ex of extras) {
+      const g = d + "◈" + ex;   // ◈ is a separator glyph, safe as middle char
+      GLYPH_LIST.push(g);
+      GLYPH_INDEX[g] = GLYPH_LIST.length - 1;
+    }
+  }
+  // Total: 2300 unique glyphs — more than enough for all Unicode chars we'll encounter
+})();
+
+// Maps a charCode to a unique glyph string
+function charToGlyph(code) {
+  // Use code directly as index into GLYPH_LIST; wrap if > table size
+  const idx = code % GLYPH_LIST.length;
+  return GLYPH_LIST[idx];
 }
 
-/**
- * encodeText: text → Morse string
- * Letters separated by single space; words by ' / '
- * Implements the document's encoder logic: lookup + join
- */
-function encodeText(text) {
-  const { clean } = sanitize(text);
-  const parts = [];
-  for (const word of clean.split(/\s+/)) {
-    if (!word) continue;
-    const letters = [...word].map(ch => ENCODE_TABLE[ch] || '#').join(' ');
-    parts.push(letters);
-  }
-  return parts.join(' / ');
+// Maps a glyph back to its index (= the pre-XOR charCode)
+function glyphToIndex(glyph) {
+  const idx = GLYPH_INDEX[glyph];
+  if (idx === undefined) throw new Error("Unrecognised glyph: " + JSON.stringify(glyph));
+  return idx;
 }
 
-/**
- * decodeMorse: Morse string → plain text
- * Supports '/' or extended spaces as word separators
- */
-function decodeMorse(morseStr) {
-  const trimmed = morseStr.trim().replace(/\s{2,}/g, ' / ');
-  const words = trimmed.split(/\s*\/\s*/);
-  const result = words.map(word => {
-    const tokens = word.trim().split(' ').filter(Boolean);
-    return tokens.map(t => DECODE_TABLE[t] || '?').join('');
-  }).join(' ');
+// ── LAYER 2: Positional XOR shift ──
+// XOR is its own inverse, so encode and decode use the same function.
+function xorShift(code, position) {
+  // Position-dependent key derived from two independent primes
+  const key = ((position * 31 + 17) ^ (position * 7 + 53)) & 0xFF;
+  return (code ^ key) & 0xFFFF;  // keep it 16-bit safe
+}
+
+// ── LAYER 3: Block scramble / unscramble ──
+// Returns a deterministic permutation array for given length + seed.
+function buildPermutation(len, seed) {
+  const perm = Array.from({ length: len }, (_, i) => i);
+  let s = (seed >>> 0) % 0xFFFFFF;
+  for (let i = len - 1; i > 0; i--) {
+    s = ((s * 1664525) + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    [perm[i], perm[j]] = [perm[j], perm[i]];
+  }
+  return perm;
+}
+
+function scrambleBlocks(blocks, seed) {
+  const perm   = buildPermutation(blocks.length, seed);
+  const result = new Array(blocks.length);
+  perm.forEach((newPos, oldPos) => { result[newPos] = blocks[oldPos]; });
   return result;
 }
 
-/**
- * XOR cipher layer (document "strengthen" section):
- * encrypted = chr(ord(c) ^ key) for c in plaintext
- * Operates on char codes in 0–127 safe range.
- */
-function xorCipher(text, key) {
-  key = ((key >>> 0) & 0xFF) || 42;
-  return [...text].map(ch => {
-    const code = ch.charCodeAt(0);
-    return String.fromCharCode(code ^ key);
-  }).join('');
+function unscrambleBlocks(blocks, seed) {
+  const perm   = buildPermutation(blocks.length, seed);
+  const result = new Array(blocks.length);
+  // Invert permutation: if perm[oldPos] = newPos, then result[newPos] was blocks[oldPos]
+  perm.forEach((newPos, oldPos) => { result[oldPos] = blocks[newPos]; });
+  return result;
 }
 
-/* ═══════════════════════════════════
-   THEME SYSTEM
-═══════════════════════════════════ */
-const html = document.documentElement;
-const themeToggle = document.getElementById('themeToggle');
-const themeLabel = document.getElementById('themeLabel');
-
-function setTheme(t) {
-  html.setAttribute('data-theme', t);
-  themeLabel.textContent = t === 'dark' ? 'Dark' : 'Bright';
-  try { localStorage.setItem('mv-theme', t); } catch(_) {}
-}
-
-// Load saved theme
-try {
-  const saved = localStorage.getItem('mv-theme');
-  if (saved === 'bright' || saved === 'dark') setTheme(saved);
-} catch(_) {}
-
-themeToggle.addEventListener('click', () => {
-  setTheme(html.dataset.theme === 'dark' ? 'bright' : 'dark');
-});
-
-/* ═══════════════════════════════════
-   TICKER SETUP
-═══════════════════════════════════ */
-(function buildTicker() {
-  const sample = 'MORSEVAULT . - - . / . . - / . - . . / - - . / . . - . / . - . . -';
-  const t = document.getElementById('ticker');
-  let html2 = '';
-  for (let i = 0; i < 6; i++) {
-    for (const ch of sample) {
-      if (ch === '.') html2 += `<span class="dot">•</span>`;
-      else if (ch === '-') html2 += `<span class="dash">—</span>`;
-      else html2 += `<span style="opacity:.3"> </span>`;
-    }
-    html2 += '<span style="opacity:.2"> &nbsp;&nbsp; </span>';
+// ── LAYER 4: Checksum ──
+function computeChecksum(str) {
+  let h = 0x9747b28c >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    h = (Math.imul(h ^ str.charCodeAt(i), 0x5bd1e995)) >>> 0;
+    h = (h ^ (h >>> 15)) >>> 0;
   }
-  t.innerHTML = html2;
-})();
+  return h.toString(16).toUpperCase().padStart(8, '0');
+}
 
+// ── LAYER 5: Noise blocks ──
+const NOISE_SEQS = ["⁙⁚⁛","⁜⁝⁞","⌊⌋⌌","⌍⌎⌏","⍉⍊⍋","⍌⍍⍎","⎌⎍⎎","⎏⎐⎑"];
+function makeNoise(i, seed) {
+  const idx = ((i * 17 + seed) ^ 0xBEEF) % NOISE_SEQS.length;
+  return NOISE_TAG + NOISE_SEQS[Math.abs(idx)] + NOISE_TAG;
+}
+function isNoise(block) { return block.startsWith(NOISE_TAG) && block.endsWith(NOISE_TAG); }
 
+// ═══════════════════════════════════════════════
+//  ENCODE
+// ═══════════════════════════════════════════════
+function encodeMoss(sender, message) {
+  const seed      = Date.now() % 0xFFFFFF;
+  const cleanMsg  = message.trim();
+  const cleanName = sender.trim();
+  const chars     = [...cleanMsg];   // spread handles emoji & surrogate pairs
 
-/* ═══════════════════════════════════
-   CHARACTER COUNTER
-═══════════════════════════════════ */
-const encMsg = document.getElementById('encMsg');
-const charCount = document.getElementById('charCount');
-encMsg.addEventListener('input', () => {
-  charCount.textContent = encMsg.value.length;
-});
-
-/* ═══════════════════════════════════
-   FLIP CARD
-═══════════════════════════════════ */
-const flipInner = document.getElementById('flipInner');
-
-document.getElementById('toDecodeLink').addEventListener('click', () => {
-  flipInner.classList.add('flipped');
-});
-document.getElementById('toEncodeLink').addEventListener('click', () => {
-  flipInner.classList.remove('flipped');
-});
-
-/* ═══════════════════════════════════
-   POPUP HELPERS
-═══════════════════════════════════ */
-function openPopup(id) {
-  const el = document.getElementById(id);
-  el.classList.add('open');
-  el.addEventListener('click', function handler(e) {
-    if (e.target === el) { closePopup(id); el.removeEventListener('click', handler); }
+  // Step 1 + 2: charCode → XOR shift → glyph
+  const glyphBlocks = chars.map((ch, i) => {
+    const code    = ch.codePointAt(0);
+    const shifted = xorShift(code, i);
+    return charToGlyph(shifted);
   });
-}
-function closePopup(id) {
-  document.getElementById(id).classList.remove('open');
+
+  // Step 3: scramble block positions with timestamp seed
+  const scrambled = scrambleBlocks(glyphBlocks, seed);
+
+  // Step 5: inject noise every 5 blocks
+  const noisy = scrambled.flatMap((g, i) => {
+    const out = [g];
+    if ((i + 1) % 5 === 0) out.push(makeNoise(i, seed));
+    return out;
+  });
+
+  // Assemble body
+  const body = noisy.join(BLOCK_SEP);
+
+  // Step 4: metadata + checksum
+  const senderEnc = btoa(unescape(encodeURIComponent(cleanName))).replace(/=/g, '');
+  const meta      = [VER_TAG, seed.toString(36), chars.length.toString(36), senderEnc].join(MOSS_SEP);
+  const checksum  = computeChecksum(body + meta);
+
+  const mosscode = MOSS_HEADER + meta + MOSS_SEP + checksum + "::BODY::" + body + MOSS_FOOTER;
+  return { mosscode, checksum, charCount: chars.length, blockCount: scrambled.length };
 }
 
-document.getElementById('encPopupClose').addEventListener('click', () => closePopup('encPopup'));
-document.getElementById('decPopupClose').addEventListener('click', () => closePopup('decPopup'));
+// ═══════════════════════════════════════════════
+//  DECODE
+// ═══════════════════════════════════════════════
+function decodeMoss(mosscode) {
+  const raw = mosscode.trim();
 
-// Keyboard close
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closePopup('encPopup');
-    closePopup('decPopup');
-    clearInterval(countdownTimer);
+  // 1. Validate wrapper
+  if (!raw.startsWith(MOSS_HEADER) || !raw.endsWith(MOSS_FOOTER)) {
+    throw new Error("Invalid mosscode — missing signature. Only codes from this site work here.");
   }
-});
 
-/* ═══════════════════════════════════
-   COLOURED MORSE RENDERING
-   dots → violet class, dashes → blue/pink class
-═══════════════════════════════════ */
-function renderMorse(morseStr) {
-  return [...morseStr].map(ch => {
-    if (ch === '.') return `<span class="d">.</span>`;
-    if (ch === '-') return `<span class="k">-</span>`;
-    return escHtml(ch);
-  }).join('');
+  const inner      = raw.slice(MOSS_HEADER.length, -MOSS_FOOTER.length);
+  const bodyMarker = "::BODY::";
+  const bodyIdx    = inner.indexOf(bodyMarker);
+  if (bodyIdx === -1) throw new Error("Corrupt mosscode — body marker missing.");
+
+  const metaPart = inner.slice(0, bodyIdx);
+  const body     = inner.slice(bodyIdx + bodyMarker.length);
+
+  // 2. Parse metadata
+  const fields = metaPart.split(MOSS_SEP);
+  if (fields.length < 5) throw new Error("Corrupt mosscode — metadata incomplete.");
+
+  const [ver, seedStr, lenStr, senderEnc, storedChecksum] = fields;
+
+  if (ver !== VER_TAG) throw new Error("Incompatible version. This site only reads MossCode v42.");
+
+  // 3. Verify checksum
+  const metaForCheck = [ver, seedStr, lenStr, senderEnc].join(MOSS_SEP);
+  const recomputed   = computeChecksum(body + metaForCheck);
+  if (recomputed !== storedChecksum) {
+    throw new Error("Checksum mismatch — this mosscode was tampered with or is corrupt.");
+  }
+
+  const seed   = parseInt(seedStr, 36);
+  const msgLen = parseInt(lenStr, 36);
+
+  // 4. Decode sender name
+  let sender = "Unknown";
+  try {
+    const padded = senderEnc + '='.repeat((4 - senderEnc.length % 4) % 4);
+    sender = decodeURIComponent(escape(atob(padded)));
+  } catch { sender = "Unknown"; }
+
+  // 5. Split body and strip noise blocks
+  const allBlocks   = body.split(BLOCK_SEP);
+  const cleanBlocks = allBlocks.filter(b => !isNoise(b));
+
+  // 6. Unscramble (reverse Step 3)
+  const unscrambled = unscrambleBlocks(cleanBlocks, seed);
+
+  // 7. For each glyph: glyph → index → un-XOR-shift → charCode → char
+  //    We only process exactly msgLen blocks (rest are padding)
+  const chars = unscrambled.slice(0, msgLen).map((glyph, i) => {
+    const idx     = glyphToIndex(glyph);       // index = xorShift(originalCode, i)
+    const code    = xorShift(idx, i);          // un-XOR: apply same key again (XOR is self-inverse)
+    return String.fromCodePoint(code);
+  });
+
+  const message   = chars.join('');
+  const timestamp = new Date(seed + 1700000000000).toLocaleString();
+
+  return { message, sender, timestamp };
 }
 
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+/* ════════════════════════════════════════════════════
+   UI LOGIC
+   ════════════════════════════════════════════════════ */
+
+let lastMosscode = '';
+let lastDecoded  = '';
+
+function switchTab(tab) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(tab.slice(0,3))) b.classList.add('active');
+  });
+  // Hide errors
+  hideError('encodeError');
+  hideError('decodeError');
 }
 
-/* ═══════════════════════════════════
-   VALIDATION
-═══════════════════════════════════ */
-function showErr(id, show) {
+function updateCharCount(inputId, countId, max) {
+  const val = document.getElementById(inputId).value.length;
+  document.getElementById(countId).textContent = val;
+}
+
+function showError(id, msg) {
   const el = document.getElementById(id);
-  el.classList.toggle('show', show);
+  el.classList.add('show');
+  el.querySelector('span:last-child').textContent = msg;
 }
 
-function validateEncode() {
-  const name = document.getElementById('encName').value.trim();
-  const msg  = encMsg.value.trim();
-  let ok = true;
-  if (!name) { showErr('errName', true); ok = false; } else showErr('errName', false);
-  if (!msg)  { showErr('errMsg',  true); ok = false; } else showErr('errMsg',  false);
-  return ok ? { name, msg } : null;
+function hideError(id) {
+  document.getElementById(id).classList.remove('show');
 }
 
-function validateDecode() {
-  const morse = document.getElementById('decMorse').value.trim();
-  if (!morse) { showErr('errDecMorse', true); return null; }
-  showErr('errDecMorse', false);
-  return { morse };
-}
+function encodeMessage() {
+  const sender  = document.getElementById('senderName').value.trim();
+  const message = document.getElementById('messageInput').value.trim();
+  hideError('encodeError');
 
-/* ═══════════════════════════════════
-   COUNTDOWN + AUTO REFRESH
-═══════════════════════════════════ */
-let countdownTimer = null;
-let countdownValue = 5;
-
-function startCountdown() {
-  const el = document.getElementById('countdown');
-  countdownValue = 5;
-  el.textContent = countdownValue;
-  clearInterval(countdownTimer);
-  countdownTimer = setInterval(() => {
-    countdownValue--;
-    el.textContent = countdownValue;
-    if (countdownValue <= 0) {
-      clearInterval(countdownTimer);
-      location.reload();
-    }
-  }, 1000);
-}
-
-/* ═══════════════════════════════════
-   ENCODE HANDLER
-═══════════════════════════════════ */
-document.getElementById('encodeBtn').addEventListener('click', () => {
-  const data = validateEncode();
-  if (!data) return;
-
-  const useXor = document.getElementById('xorToggle').checked;
-  const xorKey = parseInt(document.getElementById('xorKey').value, 10) || 42;
-
-  let msgToEncode = data.msg;
-  if (useXor) msgToEncode = xorCipher(msgToEncode, xorKey);
-
-  const morseResult = encodeText(msgToEncode);
-
-  // Sender tag
-  const senderMorse = encodeText(data.name);
-  const fullMorse = `${morseResult} .. -.. ${senderMorse}`; // separator: " ID "
-
-  // Render
-  document.getElementById('encSenderLine').textContent =
-    `Sent by: ${data.name}` + (useXor ? `  ·  XOR key: ${xorKey}` : '');
-  document.getElementById('encResult').innerHTML = renderMorse(fullMorse);
-  document.getElementById('encResult').dataset.plain = fullMorse;
-
-  openPopup('encPopup');
-});
-
-/* ═══════════════════════════════════
-   COPY BUTTON
-═══════════════════════════════════ */
-document.getElementById('copyBtn').addEventListener('click', async () => {
-  const morse = document.getElementById('encResult').dataset.plain || '';
-  const btn = document.getElementById('copyBtn');
+  if (!sender) {
+    showError('encodeError', 'Please enter your sender name.');
+    document.getElementById('senderName').focus();
+    return;
+  }
+  if (!message) {
+    showError('encodeError', 'Please enter a message to encode.');
+    document.getElementById('messageInput').focus();
+    return;
+  }
 
   try {
-    await navigator.clipboard.writeText(morse);
-  } catch (_) {
-    // Fallback for older browsers
+    const { mosscode, checksum, charCount, blockCount } = encodeMoss(sender, message);
+    lastMosscode = mosscode;
+
+    // Populate popup
+    document.getElementById('popupSenderBadge').textContent = '👤 ' + sender;
+    document.getElementById('encodedOutput').textContent = mosscode;
+    document.getElementById('checksumDisplay').textContent = checksum;
+    document.getElementById('statChars').textContent = charCount;
+    document.getElementById('statBlocks').textContent = blockCount;
+
+    openPopup('encodeOverlay');
+  } catch (e) {
+    showError('encodeError', 'Encoding failed: ' + e.message);
+  }
+}
+
+function decodeMessage() {
+  const code = document.getElementById('decodeInput').value.trim();
+  hideError('decodeError');
+
+  if (!code) {
+    showError('decodeError', 'Please paste a mosscode to decode.');
+    document.getElementById('decodeInput').focus();
+    return;
+  }
+
+  try {
+    const { message, sender, timestamp } = decodeMoss(code);
+    lastDecoded = message;
+
+    document.getElementById('decodedSender').textContent    = '👤 ' + sender;
+    document.getElementById('decodedOutput').textContent    = message;
+    document.getElementById('decodedTimestamp').textContent = timestamp;
+
+    openPopup('decodeOverlay');
+  } catch (e) {
+    showError('decodeError', e.message || 'Invalid or tampered mosscode. Only genuine MossCode output can be decoded here.');
+  }
+}
+
+function openPopup(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePopup(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function copyCode() {
+  navigator.clipboard.writeText(lastMosscode).then(() => {
+    showToast('✓', 'Mosscode copied to clipboard!');
+  }).catch(() => {
+    // Fallback
     const ta = document.createElement('textarea');
-    ta.value = morse;
-    ta.style.cssText = 'position:fixed;opacity:0';
+    ta.value = lastMosscode;
     document.body.appendChild(ta);
     ta.select();
     document.execCommand('copy');
     document.body.removeChild(ta);
-  }
-
-  btn.textContent = '✅ Copied!';
-  btn.classList.add('copied');
-  startCountdown();
-
-  setTimeout(() => {
-    btn.textContent = '📋 Copy Morse Code';
-    btn.classList.remove('copied');
-  }, 3000);
-});
-
-/* ═══════════════════════════════════
-   DECODE HANDLER
-═══════════════════════════════════ */
-document.getElementById('decodeBtn').addEventListener('click', () => {
-  const data = validateDecode();
-  if (!data) return;
-
-  const useXor = document.getElementById('xorToggleDec').checked;
-  const xorKey = parseInt(document.getElementById('xorKeyDec').value, 10) || 42;
-
-  // Split on the " .. -.. " sender-separator injected at encode time
-  // The separator encodes "ID" (.. = I, -.. = D)
-  const SEP = ' .. -.. ';
-  let msgMorse, nameMorse;
-  const sepIdx = data.morse.indexOf(SEP);
-  if (sepIdx !== -1) {
-    msgMorse  = data.morse.slice(0, sepIdx).trim();
-    nameMorse = data.morse.slice(sepIdx + SEP.length).trim();
-  } else {
-    msgMorse  = data.morse.trim();
-    nameMorse = '';
-  }
-
-  // Decode each part
-  let decodedMsg  = decodeMorse(msgMorse);
-  let decodedName = nameMorse ? decodeMorse(nameMorse) : '';
-
-  if (useXor) {
-    decodedMsg  = xorCipher(decodedMsg,  xorKey);
-    // Name was not XOR'd (it was appended after encoding), so don't reverse it
-  }
-
-  // Sanitise — only printable ASCII
-  function safePrint(str) {
-    return [...str].map(ch => {
-      const code = ch.charCodeAt(0);
-      return (code >= 32 && code < 127) ? escHtml(ch) : '';
-    }).join('');
-  }
-
-  const safeMsg  = safePrint(decodedMsg);
-  const safeName = decodedName ? safePrint(decodedName) : '';
-
-  // Build popup: sender name on first line, message below
-  let html = '';
-  if (safeName) {
-    html += `<div style="
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-bottom:14px;
-      padding-bottom:12px;
-      border-bottom:1px solid var(--border);
-    ">
-      <span style="font-size:.75rem; color:var(--text2); font-style:italic; white-space:nowrap;">From:</span>
-      <span style="
-        color:var(--accent1);
-        font-weight:700;
-        font-size:1.05rem;
-        letter-spacing:.06em;
-        text-transform:uppercase;
-      ">${safeName}</span>
-    </div>`;
-  }
-  html += `<div style="
-    color:var(--text);
-    font-size:1.05rem;
-    line-height:1.85;
-    letter-spacing:.03em;
-    word-break:break-word;
-  ">${safeMsg || '<em style="color:var(--text2)">Could not decode. Check Morse format.</em>'}</div>`;
-
-  document.getElementById('decResult').innerHTML = html;
-  openPopup('decPopup');
-});
-
-/* ═══════════════════════════════════
-   XOR KEY — only enable when checkbox ticked
-═══════════════════════════════════ */
-function syncXorInputs() {
-  document.getElementById('xorKey').disabled    = !document.getElementById('xorToggle').checked;
-  document.getElementById('xorKeyDec').disabled = !document.getElementById('xorToggleDec').checked;
+    showToast('✓', 'Mosscode copied!');
+  });
 }
-document.getElementById('xorToggle').addEventListener('change', syncXorInputs);
-document.getElementById('xorToggleDec').addEventListener('change', syncXorInputs);
-syncXorInputs();
 
-/* ═══════════════════════════════════
-   PREVENT form submit on Enter in inputs
-═══════════════════════════════════ */
-['encName'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') e.preventDefault();
+function copyDecoded() {
+  navigator.clipboard.writeText(lastDecoded).then(() => {
+    showToast('✓', 'Message copied to clipboard!');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = lastDecoded;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✓', 'Message copied!');
+  });
+}
+
+function showToast(icon, msg, duration = 2800) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent  = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// Tab button click logic (refactored to use inner text)
+document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
+  btn.addEventListener('click', () => {
+    const id = idx === 0 ? 'encoder' : 'decoder';
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    hideError('encodeError');
+    hideError('decodeError');
   });
 });
 
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closePopup('encodeOverlay');
+    closePopup('decodeOverlay');
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    const encPanel = document.getElementById('encoder');
+    const decPanel = document.getElementById('decoder');
+    if (encPanel.classList.contains('active')) encodeMessage();
+    else decodeMessage();
+  }
+});
 </script>
 </body>
 </html>
