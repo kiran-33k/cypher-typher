@@ -25,6 +25,185 @@
     --font: 'Bricolage Grotesque', sans-serif;
   }
 
+  /* ─── DARK MODE VARIABLES ─── */
+  body.dark {
+    --white: #0E0E1A;
+    --off-white: #161624;
+    --black: #E8E8F8;
+    --shadow: 5px 5px 0px #E8E8F8;
+    --shadow-blue: 5px 5px 0px var(--blue-thick);
+    --shadow-violet: 5px 5px 0px var(--violet);
+  }
+
+  /* Keep hero/header/ticker/popup-header always on dark bg — no inversion needed */
+  body.dark header               { border-bottom-color: rgba(232,232,248,0.2); }
+  body.dark .ticker              { border-color: rgba(232,232,248,0.15); }
+  body.dark .hero                { border-bottom-color: rgba(232,232,248,0.15); }
+  body.dark .card                { border-color: rgba(232,232,248,0.25); box-shadow: 5px 5px 0px rgba(232,232,248,0.15); }
+  body.dark .card-header         { border-bottom-color: rgba(232,232,248,0.2); }
+  body.dark .card-icon           { border-color: rgba(232,232,248,0.25); }
+  body.dark .tab-container       { border-color: rgba(232,232,248,0.25); }
+  body.dark .tab-btn             { border-right-color: rgba(232,232,248,0.2); background: var(--white); color: var(--black); }
+  body.dark .tab-btn.active      { background: var(--blue-thick); color: #FAFAFA; }
+  body.dark .tab-btn:not(.active):hover { background: #1E1E2E; }
+  body.dark input[type="text"],
+  body.dark textarea             { border-color: rgba(232,232,248,0.25); color: var(--black); }
+  body.dark input[type="text"]:focus,
+  body.dark textarea:focus       { border-color: var(--blue-light); box-shadow: 3px 3px 0px var(--blue-light); }
+  body.dark .btn                 { border-color: rgba(232,232,248,0.4); }
+  body.dark .btn-outline         { color: var(--black); box-shadow: 5px 5px 0px rgba(232,232,248,0.2); }
+  body.dark .btn-outline:hover   { background: #1E1E2E; }
+  body.dark .btn-primary:hover   { box-shadow: 7px 7px 0px rgba(232,232,248,0.3); }
+  body.dark .popup               { border-color: rgba(232,232,248,0.3); box-shadow: 10px 10px 0px rgba(232,232,248,0.15); }
+  body.dark .close-btn           { border-color: rgba(232,232,248,0.2); background: #1A1A2E; color: var(--black); }
+  body.dark .close-btn:hover     { background: #22223A; }
+  body.dark .hash-row            { border-color: rgba(232,232,248,0.2); }
+  body.dark .stats-row           { border-color: rgba(232,232,248,0.2); }
+  body.dark .stat-cell           { border-right-color: rgba(232,232,248,0.15); }
+  body.dark .sender-badge        { border-color: rgba(232,232,248,0.25); }
+  body.dark .error-box           { background: #2A0A0A; border-color: #FF4444; color: #FF8888; }
+  body.dark .output-box::-webkit-scrollbar-track { background: #0A0A1A; }
+  body.dark .popup-body          { background: var(--white); }
+  body.dark .output-label        { color: rgba(232,232,248,0.5); }
+  body.dark .hash-label          { color: rgba(232,232,248,0.4); }
+  body.dark .card-subtitle       { color: rgba(232,232,248,0.4); }
+  body.dark .char-count          { color: rgba(232,232,248,0.35); }
+  body.dark footer               { border-top-color: var(--blue-thick); }
+  body.dark label                { color: var(--black); }
+
+  /* ─── THEME TOGGLE BUTTON ─── */
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.25);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 17px;
+    transition: background 0.15s, transform 0.15s;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .theme-toggle:hover  { background: rgba(255,255,255,0.22); transform: scale(1.08); }
+  .theme-toggle:active { transform: scale(0.94); }
+
+  /* ─── HEADER RIGHT GROUP ─── */
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* ─── SCRAMBLE ANIMATION ─── */
+  @keyframes glyphFlip {
+    0%   { opacity: 0.3; transform: scaleY(0.6) skewX(-4deg); filter: blur(1px); }
+    40%  { opacity: 1;   transform: scaleY(1.05) skewX(1deg); filter: blur(0); }
+    100% { opacity: 1;   transform: scaleY(1) skewX(0); filter: blur(0); }
+  }
+
+  .output-box.animating .glyph-char {
+    display: inline;
+    animation: glyphFlip 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* ─── AUTO-DETECT BANNER ─── */
+  .autodetect-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--violet);
+    border: 3px solid var(--black);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    animation: slideIn 0.3s ease;
+  }
+  .autodetect-banner.show { display: flex; }
+  .autodetect-banner p {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    flex: 1;
+    min-width: 180px;
+  }
+  .autodetect-banner .ad-btn {
+    background: var(--white);
+    color: var(--violet);
+    border: 2px solid rgba(0,0,0,0.2);
+    padding: 7px 16px;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.1s;
+  }
+  .autodetect-banner .ad-btn:hover { opacity: 0.85; }
+  .autodetect-banner .ad-close {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  /* ─── EXPIRY COUNTDOWN ─── */
+  .expiry-bar-wrap {
+    display: none;
+    margin-bottom: 16px;
+  }
+  .expiry-bar-wrap.show { display: block; }
+  .expiry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .expiry-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #FF5533;
+  }
+  .expiry-countdown {
+    font-size: 13px;
+    font-weight: 800;
+    color: #FF5533;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .expiry-track {
+    height: 6px;
+    background: rgba(255,85,51,0.15);
+    border: 2px solid #FF5533;
+    position: relative;
+    overflow: hidden;
+  }
+  .expiry-fill {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    background: #FF5533;
+    transition: width 1s linear;
+  }
+  .expiry-wipe-msg {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255,85,51,0.6);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
   *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -794,7 +973,10 @@
     <div class="logo-mark">K</div>
     <span class="logo-text">Kiran's <span>Cypher</span></span>
   </a>
-  <div class="header-badge">🔒 Encrypted</div>
+  <div class="header-right">
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle dark/light mode">☀️</button>
+    <div class="header-badge">🔒 Encrypted</div>
+  </div>
 </header>
 
 <!-- HERO -->
@@ -839,7 +1021,14 @@
   <div class="panel active" id="encoder">
     <div class="security-strip">
       <span class="icon">🛡</span>
-      <p>Messages are encoded using Moss Cipher v4.2 — a 7-layer obfuscation system. Only this site can decode the output.</p>
+      <p>Messages are encoded using Kiran's Cipher — a 7-layer obfuscation system. Only this site can decode the output.</p>
+    </div>
+
+    <!-- AUTO-DETECT BANNER -->
+    <div class="autodetect-banner" id="autodetectBanner">
+      <p>⚡ Mosscode detected — switch to Decoder?</p>
+      <button class="ad-btn" onclick="switchToDecoder()">Go to Decoder</button>
+      <button class="ad-close" onclick="dismissAutodetect()">✕</button>
     </div>
 
     <div class="card">
@@ -982,6 +1171,18 @@
 
       <div class="output-label">Original Message</div>
       <div class="output-box decoded-box" id="decodedOutput"></div>
+
+      <!-- EXPIRY COUNTDOWN -->
+      <div class="expiry-bar-wrap" id="expiryWrap">
+        <div class="expiry-header">
+          <span class="expiry-label">🔴 Message self-clears in</span>
+          <span class="expiry-countdown" id="expiryCount">30s</span>
+        </div>
+        <div class="expiry-track">
+          <div class="expiry-fill" id="expiryFill" style="width:100%"></div>
+        </div>
+        <div class="expiry-wipe-msg">This message will be wiped from view automatically</div>
+      </div>
 
       <div class="hash-row">
         <span class="hash-label">Timestamp</span>
@@ -1242,12 +1443,157 @@ function decodeMoss(mosscode) {
 }
 
 /* ════════════════════════════════════════════════════
-   UI LOGIC
+   UI LOGIC — with Dark Mode, Scramble Anim,
+               Auto-Detect, Expiry Countdown
    ════════════════════════════════════════════════════ */
 
 let lastMosscode = '';
 let lastDecoded  = '';
+let expiryTimer  = null;
+let expiryInterval = null;
 
+/* ── DARK MODE ── */
+function toggleTheme() {
+  const isDark = document.body.classList.toggle('dark');
+  document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('kc_theme', isDark ? 'dark' : 'light');
+}
+
+// Restore saved theme on load
+(function initTheme() {
+  const saved = localStorage.getItem('kc_theme');
+  if (saved === 'dark') {
+    document.body.classList.add('dark');
+    document.getElementById('themeToggle').textContent = '🌙';
+  }
+})();
+
+/* ── SCRAMBLE ANIMATION ── */
+const SCRAMBLE_CHARS = ['◉─','•━','◦═','●╌','⊙▬','○−','⊚▮','⊛▯','⊝╍','·▭'];
+function animateScramble(el, finalText, duration = 900) {
+  el.classList.add('animating');
+  el.textContent = '';
+
+  const chars   = [...finalText];
+  const total   = chars.length;
+  const perChar = Math.max(20, Math.min(60, duration / total));
+
+  chars.forEach((ch, i) => {
+    const span = document.createElement('span');
+    span.className = 'glyph-char';
+    span.style.animationDelay = `${i * perChar * 0.001}s`;
+
+    // Start with random scramble chars, settle to real char
+    let flips = 0;
+    const maxFlips = 5;
+    span.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+
+    const flip = setInterval(() => {
+      flips++;
+      if (flips >= maxFlips) {
+        span.textContent = ch;
+        clearInterval(flip);
+      } else {
+        span.textContent = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+      }
+    }, perChar);
+
+    el.appendChild(span);
+  });
+
+  setTimeout(() => el.classList.remove('animating'), duration + 200);
+}
+
+/* ── AUTO-DETECT MOSSCODE IN ENCODER ── */
+let autodetectDismissed = false;
+
+document.getElementById('messageInput').addEventListener('input', function() {
+  const val = this.value.trim();
+  const isMosscode = val.startsWith('⟦MOSS::') && val.endsWith('::END⟧');
+  const banner = document.getElementById('autodetectBanner');
+
+  if (isMosscode && !autodetectDismissed) {
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
+  }
+});
+
+function switchToDecoder() {
+  // Move the pasted text to the decoder textarea
+  const msg = document.getElementById('messageInput').value.trim();
+  document.getElementById('decodeInput').value = msg;
+  document.getElementById('messageInput').value = '';
+  updateCharCount('messageInput', 'msgCount', 1000);
+  document.getElementById('autodetectBanner').classList.remove('show');
+  autodetectDismissed = false;
+
+  // Switch tab
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('decoder').classList.add('active');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+
+  hideError('encodeError');
+  hideError('decodeError');
+  showToast('⚡', 'Mosscode moved to Decoder!');
+}
+
+function dismissAutodetect() {
+  autodetectDismissed = true;
+  document.getElementById('autodetectBanner').classList.remove('show');
+}
+
+/* ── EXPIRY COUNTDOWN ── */
+const EXPIRY_SECS = 30;
+
+function startExpiry() {
+  clearExpiryTimers();
+
+  const wrap  = document.getElementById('expiryWrap');
+  const count = document.getElementById('expiryCount');
+  const fill  = document.getElementById('expiryFill');
+
+  wrap.classList.add('show');
+  let remaining = EXPIRY_SECS;
+  count.textContent = remaining + 's';
+  fill.style.width  = '100%';
+
+  // Force reflow so CSS transition fires
+  void fill.offsetWidth;
+
+  expiryInterval = setInterval(() => {
+    remaining--;
+    count.textContent = remaining + 's';
+    fill.style.width  = (remaining / EXPIRY_SECS * 100) + '%';
+
+    if (remaining <= 5) {
+      count.style.color = '#FF2200';
+      fill.style.background = '#FF2200';
+    }
+
+    if (remaining <= 0) {
+      clearExpiryTimers();
+      // Wipe message and close popup
+      document.getElementById('decodedOutput').textContent = '';
+      wrap.classList.remove('show');
+      closePopup('decodeOverlay');
+      showToast('🔒', 'Message wiped from view.');
+    }
+  }, 1000);
+}
+
+function clearExpiryTimers() {
+  if (expiryInterval) { clearInterval(expiryInterval); expiryInterval = null; }
+  if (expiryTimer)    { clearTimeout(expiryTimer);     expiryTimer    = null; }
+  // Reset fill colour
+  const fill  = document.getElementById('expiryFill');
+  const count = document.getElementById('expiryCount');
+  if (fill)  { fill.style.background = '#FF5533'; fill.style.width = '100%'; }
+  if (count) { count.style.color = '#FF5533'; }
+}
+
+/* ── CORE UI HELPERS ── */
 function switchTab(tab) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1255,7 +1601,6 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => {
     if (b.textContent.toLowerCase().includes(tab.slice(0,3))) b.classList.add('active');
   });
-  // Hide errors
   hideError('encodeError');
   hideError('decodeError');
 }
@@ -1275,6 +1620,7 @@ function hideError(id) {
   document.getElementById(id).classList.remove('show');
 }
 
+/* ── ENCODE ── */
 function encodeMessage() {
   const sender  = document.getElementById('senderName').value.trim();
   const message = document.getElementById('messageInput').value.trim();
@@ -1297,17 +1643,22 @@ function encodeMessage() {
 
     // Populate popup
     document.getElementById('popupSenderBadge').textContent = '👤 ' + sender;
-    document.getElementById('encodedOutput').textContent = mosscode;
-    document.getElementById('checksumDisplay').textContent = checksum;
-    document.getElementById('statChars').textContent = charCount;
-    document.getElementById('statBlocks').textContent = blockCount;
+    document.getElementById('checksumDisplay').textContent  = checksum;
+    document.getElementById('statChars').textContent        = charCount;
+    document.getElementById('statBlocks').textContent       = blockCount;
 
+    // Open popup first, then animate
     openPopup('encodeOverlay');
+
+    const outputEl = document.getElementById('encodedOutput');
+    animateScramble(outputEl, mosscode, 1100);
+
   } catch (e) {
     showError('encodeError', 'Encoding failed: ' + e.message);
   }
 }
 
+/* ── DECODE ── */
 function decodeMessage() {
   const code = document.getElementById('decodeInput').value.trim();
   hideError('decodeError');
@@ -1327,6 +1678,8 @@ function decodeMessage() {
     document.getElementById('decodedTimestamp').textContent = timestamp;
 
     openPopup('decodeOverlay');
+    startExpiry();
+
   } catch (e) {
     showError('decodeError', e.message || 'Invalid or tampered mosscode. Only genuine MossCode output can be decoded here.');
   }
@@ -1340,13 +1693,13 @@ function openPopup(id) {
 function closePopup(id) {
   document.getElementById(id).classList.remove('show');
   document.body.style.overflow = '';
+  if (id === 'decodeOverlay') clearExpiryTimers();
 }
 
 function copyCode() {
   navigator.clipboard.writeText(lastMosscode).then(() => {
     showToast('✓', 'Mosscode copied to clipboard!');
   }).catch(() => {
-    // Fallback
     const ta = document.createElement('textarea');
     ta.value = lastMosscode;
     document.body.appendChild(ta);
@@ -1379,7 +1732,7 @@ function showToast(icon, msg, duration = 2800) {
   setTimeout(() => toast.classList.remove('show'), duration);
 }
 
-// Tab button click logic (refactored to use inner text)
+// Tab button click logic
 document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
   btn.addEventListener('click', () => {
     const id = idx === 0 ? 'encoder' : 'decoder';
@@ -1387,6 +1740,7 @@ document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(id).classList.add('active');
     btn.classList.add('active');
+    autodetectDismissed = false;
     hideError('encodeError');
     hideError('decodeError');
   });
@@ -1400,7 +1754,6 @@ document.addEventListener('keydown', e => {
   }
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     const encPanel = document.getElementById('encoder');
-    const decPanel = document.getElementById('decoder');
     if (encPanel.classList.contains('active')) encodeMessage();
     else decodeMessage();
   }
